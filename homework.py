@@ -49,6 +49,7 @@ def get_homework_statuses(current_timestamp):
             time.sleep(5)
             continue
 
+
 def send_message(message):
     return bot.send_message(chat_id=CHAT_ID, text=message)
 
