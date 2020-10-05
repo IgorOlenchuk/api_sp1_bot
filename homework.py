@@ -5,6 +5,7 @@ import telegram
 import logging
 
 from dotenv import load_dotenv
+from requests.exceptions import HTTPError
 
 load_dotenv()
 
@@ -19,19 +20,16 @@ bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 def parse_homework_status(homework):
     homework_name = homework['homework_name']
-
-    try:
-        status = homework['status']
-        if status == 'rejected':
-            verdict = 'К сожалению в работе нашлись ошибки.'
-        else:
-            if status == 'approved':
-                verdict = 'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
-            logger.error(parse_homework_status)
-        return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
-
-    except Exception as e:
+    status = homework['status']
+    verdict = []
+    if status != 'rejected' and status != 'approved':
         logger.error(parse_homework_status)
+        return 'error'
+    elif status == 'rejected':
+        verdict = 'К сожалению в работе нашлись ошибки.'
+    elif status == 'approved':
+        verdict = 'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
+    return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
 def get_homework_statuses(current_timestamp):
@@ -39,12 +37,18 @@ def get_homework_statuses(current_timestamp):
     data = {
         'from_date': current_timestamp
     }
-    homework_statuses = requests.get(URL, headers=headers, params=data)
-    if homework_statuses.status_code != 200:
-        logger.error(homework_statuses)
-        return
-    return homework_statuses.json()
+    homework_statuses = {}
+    try:
+        homework_statuses = requests.get(URL, headers=headers, params=data)
+        homework_statuses.raise_for_status()
 
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+
+    return homework_statuses.json()
 
 def send_message(message):
     return bot.send_message(chat_id=CHAT_ID, text=message)
