@@ -33,7 +33,7 @@ def parse_homework_status(homework):
         return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
     except Exception as e:
-        logger.error(f'Error in homework_name: {e}')
+        logger.error(f'Ошибка в homework_name: {e}')
 
 
 def get_homework_statuses(current_timestamp):
