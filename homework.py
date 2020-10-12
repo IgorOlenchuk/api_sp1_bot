@@ -35,7 +35,6 @@ def get_homework_statuses(current_timestamp):
         'from_date': current_timestamp
     }
     homework_statuses = requests.get(URL, headers=headers, params=data)
-    homework_statuses.raise_for_status()
     return homework_statuses.json()
 
 
